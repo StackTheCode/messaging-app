@@ -1,0 +1,19 @@
+### Register a new user (you need to implement saving logic)
+ POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "ann",
+  "password": "password123"
+}
+
+###
+
+### Try login
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "ann",
+  "password": "password123"
+}
