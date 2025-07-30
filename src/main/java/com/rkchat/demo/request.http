@@ -4,7 +4,8 @@ Content-Type: application/json
 
 {
   "username": "ann",
-  "password": "password123"
+  "password": "password123",
+  "email": "random@gmail.com"
 }
 
 ###
@@ -17,3 +18,7 @@ Content-Type: application/json
   "username": "ann",
   "password": "password123"
 }
+
+###
+GET http://localhost:8080/api/test/hello
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYWtlIiwiaWF0IjoxNzUzODQ3NzIzLCJleHAiOjE3NTM4ODM3MjN9.mfc_7rMYv3sS6fz3hn56DLu4BJXOwaBNU1ROMob3ADE

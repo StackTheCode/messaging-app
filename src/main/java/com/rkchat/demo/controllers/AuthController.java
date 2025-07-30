@@ -59,8 +59,8 @@ public class AuthController {
         User newUser = new User();
         newUser.setUsername(request.getUsername());
         newUser.setEmail((request.getEmail()));
-String encodedPassword = passwordEncoder.encode(request.getPassword());
-newUser.setPassword(encodedPassword);
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+       newUser.setPassword(encodedPassword);
         newUser.setRole("USER");
         userRepository.save(newUser);
         // Save user to database using repository
