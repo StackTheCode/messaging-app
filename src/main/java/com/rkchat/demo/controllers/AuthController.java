@@ -8,12 +8,14 @@ import com.rkchat.demo.repositories.UserRepository;
 import com.rkchat.demo.services.CustomUserDetailsService;
 import com.rkchat.demo.services.JwtService;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,19 +36,22 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getUsername(), request.getPassword()
-                    )
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
 
-            UserDetails user = userDetailsService.loadUserByUsername(request.getUsername());
-            String token = jwtService.generateToken(user);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
+            String token = jwtService.generateToken(userDetails);
 
-            return ResponseEntity.ok(new AuthResponse(token));
+            User userEntity = userRepository.findByUsername(request.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            Long userId = userEntity.getId();
+
+            return ResponseEntity.ok(new AuthResponse(token,userId));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
     }
+
 
     // Optional: register endpoint
     @PostMapping("/register")

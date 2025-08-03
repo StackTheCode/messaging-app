@@ -13,6 +13,7 @@ public class MessageService {
     public MessageService(MessageRepository messageRepository) {
         this.messageRepository = messageRepository;
     }
+
     public Message saveMessage(Message message){
         message.setTimestamp(LocalDateTime.now());
         return  messageRepository.save(message);

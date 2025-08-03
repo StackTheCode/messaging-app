@@ -28,7 +28,7 @@ public class JwtHandshakeInterceptor  implements HandshakeInterceptor {
                                    Map<String, Object> attributes) throws Exception {
         if (request instanceof ServletServerHttpRequest serverHttpRequest) {
             HttpServletRequest httpRequest = serverHttpRequest.getServletRequest();
-            String token = httpRequest.getParameter("token"); // ✅ key fix here
+            String token = httpRequest.getParameter("token");
             if (token != null) {
                 String username = jwtService.extractUsername(token);
                 if (username != null) {

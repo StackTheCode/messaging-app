@@ -29,5 +29,3 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:8080/api/test/hello
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYWtlIiwiaWF0IjoxNzUzODQ3NzIzLCJleHAiOjE3NTM4ODM3MjN9.mfc_7rMYv3sS6fz3hn56DLu4BJXOwaBNU1ROMob3ADE
