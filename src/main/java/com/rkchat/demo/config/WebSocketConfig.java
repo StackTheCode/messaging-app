@@ -2,12 +2,13 @@ package com.rkchat.demo.config;
 
 
 
-import com.rkchat.demo.interceptors.JwtHandshakeInterceptor;
 
 
+import com.rkchat.demo.interceptors.WebSocketAuthInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -21,14 +22,14 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @RequiredArgsConstructor
 
 public class WebSocketConfig implements  WebSocketMessageBrokerConfigurer {
-private  final JwtHandshakeInterceptor jwtHandshakeInterceptor;
 
+    private final WebSocketAuthInterceptor webSocketAuthInterceptor;
 
 
 
     @Override
     public  void configureMessageBroker(MessageBrokerRegistry config){
-        config.enableSimpleBroker("/topic", "/queue");
+        config.enableSimpleBroker("/topic", "/queue", "/user");
         config.setApplicationDestinationPrefixes("/app");
         config.setUserDestinationPrefix("/user");
 
@@ -38,8 +39,12 @@ private  final JwtHandshakeInterceptor jwtHandshakeInterceptor;
 
         registry.addEndpoint("/ws")
                 .setAllowedOrigins("http://localhost:5173")
-                .addInterceptors(jwtHandshakeInterceptor)
                 .withSockJS();
     }
 
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration){
+        registration.interceptors(webSocketAuthInterceptor);
+    }
 }

@@ -1,26 +1,27 @@
 package com.rkchat.demo.controllers;
 
 import com.rkchat.demo.User;
-import com.rkchat.demo.dto.ChatMessage;
-import com.rkchat.demo.dto.MessageRequest;
+
+import com.rkchat.demo.dto.MessageDTO;
+import com.rkchat.demo.dto.TypingStatus;
 import com.rkchat.demo.enums.MessageType;
 import com.rkchat.demo.models.Message;
 import com.rkchat.demo.repositories.MessageRepository;
 import com.rkchat.demo.repositories.UserRepository;
 import com.rkchat.demo.services.MessageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,42 +35,35 @@ public class MessageController {
     private final MessageRepository messageRepository;
 
 
-    @PostMapping("/send")
-public ResponseEntity<?> sendMessage(@RequestBody MessageRequest messageRequest) {
-    String senderUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-    User sender = userRepository.findByUsername(senderUsername)
-            .orElseThrow(() -> new UsernameNotFoundException("Sender does not exist"));
-        User recipient = userRepository.findByUsername(messageRequest.getRecipientUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("Recipient not found"));
+    @GetMapping("/history/{userId}/{user2Id}")
+    public List<MessageDTO> getChatHistory(@PathVariable Long userId, @PathVariable Long user2Id) {
+        List<Message> messages = messageRepository.findChatHistory(userId, user2Id);
 
-        Message message = Message.builder()
-                .sender(sender)
-                .recipient(recipient)
-                .content(messageRequest.getContent())
-                .timestamp(LocalDateTime.now())
-                .messageType(MessageType.CHAT)
-                .isRead(false)
-                .build();
-        messageRepository.save(message);
+        return messages.stream()
+                .map(message -> MessageDTO.builder()
+                        .senderId(message.getSender().getId())
+                        .recipientId(message.getRecipient().getId())
+                        .content(message.getContent())
+                        .timestamp(message.getTimestamp())
+                        .messageType(message.getMessageType().name())
+                        .build()
 
-        messagingTemplate.convertAndSendToUser(
-                recipient.getUsername(),
-                "/queue/messages",
-                message
-        );
-
-        return ResponseEntity.ok("Message sent");
+                ).collect(Collectors.toList());
     }
 
 
-
     @MessageMapping("/chat.send")
-    public  void sendMessage(@Payload ChatMessage chatMessage){
+    public void sendMessage(@Payload MessageDTO chatMessage, Principal principal) {
 
-        User sender = new User(chatMessage.getSenderId());
-        User recipient = chatMessage.getRecipientId() == null  ? null : new User (chatMessage.getRecipientId());
+        User sender = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("Sender not found in WebSocket session"));
 
+        User recipient = chatMessage.getRecipientId() == null ? null : new User(chatMessage.getRecipientId());
 
+        if (chatMessage.getRecipientId() != null) {
+            recipient = userRepository.findById(chatMessage.getRecipientId())
+                    .orElseThrow(() -> new UsernameNotFoundException("Recipient not found in WebSocket session"));
+        }
         Message message = Message.builder()
                 .sender(sender)
                 .recipient(recipient)
@@ -82,15 +76,26 @@ public ResponseEntity<?> sendMessage(@RequestBody MessageRequest messageRequest)
         messageService.saveMessage(message);
 
 
-        if (chatMessage.getRecipientId() == null){
-//            public/global message
-            messagingTemplate.convertAndSend("/topic/chat",chatMessage);
+        if (chatMessage.getRecipientId() != null) {
+//            //private chat routing
+            messagingTemplate.convertAndSendToUser(
+                    chatMessage.getRecipientId().toString(),
+                    "/queue/messages",
+                    chatMessage
+            );
 
+        } else {
+//            // Send to the public topic
+            messagingTemplate.convertAndSend("/topic/chat", chatMessage);
         }
-        else{
-//            Private chat
-            messagingTemplate.convertAndSendToUser(chatMessage.getRecipientId().toString(),
-                    "/queue/messages",chatMessage);
+
+    }
+
+    @PostMapping("/chat.typing")
+    public void sendTypingStatus(@Payload TypingStatus typingStatus) {
+        if (typingStatus.getRecipientId() != null) {
+            messagingTemplate.convertAndSendToUser(typingStatus.getRecipientId().toString(),"/queue/typing",typingStatus);
         }
+
     }
 }
