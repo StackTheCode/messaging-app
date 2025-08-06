@@ -10,7 +10,6 @@ import com.rkchat.demo.repositories.MessageRepository;
 import com.rkchat.demo.repositories.UserRepository;
 import com.rkchat.demo.services.MessageService;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -91,8 +90,14 @@ public class MessageController {
 
     }
 
-    @PostMapping("/chat.typing")
-    public void sendTypingStatus(@Payload TypingStatus typingStatus) {
+    @MessageMapping("/chat.typing")
+    public void sendTypingStatus(@Payload TypingStatus typingStatus, Principal principal) {
+        User sender = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("Sender not found "));
+
+        if (!sender.getId().equals(typingStatus.getSenderId())) {
+            throw new UsernameNotFoundException("Sender id mismatch");
+        }
         if (typingStatus.getRecipientId() != null) {
             messagingTemplate.convertAndSendToUser(typingStatus.getRecipientId().toString(),"/queue/typing",typingStatus);
         }

@@ -12,5 +12,5 @@ import lombok.Setter;
 public class TypingStatus {
     private  Long senderId;
     private Long recipientId;
-    private  boolean isTyping;
+    private  boolean typing;
 }
