@@ -103,4 +103,10 @@ public class MessageController {
         }
 
     }
+    @DeleteMapping(("/history/{userId}/{user2Id}"))
+    public  void clearChatHistory(@PathVariable Long userId,@PathVariable Long user2Id){
+        messageService.clearChatHistory(userId,user2Id);
+    }
+
 }
+

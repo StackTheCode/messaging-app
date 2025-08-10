@@ -74,6 +74,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/","/index.html", "/api/auth/**", "/ws/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE,"/api/messages/history/**").authenticated()
                         .anyRequest()
                         .authenticated()
                 )
