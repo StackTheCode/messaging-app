@@ -35,15 +35,13 @@ public class FileController {
         try {
             // Generate a unique filename to prevent collisions and security issues
             String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
-            String filename = UUID.randomUUID().toString() + "-" + originalFileName;
+            String fileName = UUID.randomUUID().toString() + "-" + originalFileName;
 
-            Path targetLocation = this.fileStorageLocation.resolve(filename);
+            Path targetLocation = this.fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-            // Construct the file's URL
             String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
                     .path("/api/files/download/")
-                    .path(filename)
+                    .path(fileName)
                     .toUriString();
 
             return ResponseEntity.ok(fileUrl);
@@ -52,10 +50,10 @@ public class FileController {
         }
     }
 
-    @GetMapping("/download/{filename:.+}")
-    public ResponseEntity<UrlResource> downloadFile(@PathVariable String filename) {
+    @GetMapping("/download/{fileName:.+}")
+    public ResponseEntity<UrlResource> downloadFile(@PathVariable String fileName) {
         try {
-            Path filePath = this.fileStorageLocation.resolve(filename).normalize();
+            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
             System.out.println("Attempting to serve file from path: " + filePath.toAbsolutePath()); // Debug path
             UrlResource resource = new UrlResource(filePath.toUri());
 
@@ -69,7 +67,7 @@ public class FileController {
                     System.out.println("Content type probed: " + contentType); // Debug success
                     return ResponseEntity.ok()
                             .contentType(MediaType.parseMediaType(contentType))
-                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; fileName=\"" + resource.getFilename() + "\"")
                             .body(resource);
                 } catch (IOException ioException) {
                     System.err.println("IOException while probing content type for " + filePath.getFileName() + ": " + ioException.getMessage());
@@ -81,7 +79,7 @@ public class FileController {
                 return ResponseEntity.notFound().build();
             }
         } catch (MalformedURLException ex) {
-            System.err.println("Malformed URL exception for filename: " + filename + ": " + ex.getMessage());
+            System.err.println("Malformed URL exception for filename: " + fileName + ": " + ex.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }

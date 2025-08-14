@@ -29,11 +29,17 @@ public class Message {
 
     private  String content;
 
+    @Column(name = "file_name")
+    private String fileName;
+
+    @Column(nullable = false)
     private LocalDateTime timestamp;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private MessageType messageType;
 
+    @Column(name = "is_read", nullable = false)
     private  boolean isRead;
 
 

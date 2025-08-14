@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
         private  Long senderId;
     private  Long recipientId;
     private  String content;
-    private String filename;
+    private String fileName;
     private MessageType type;
     private LocalDateTime timestamp;
     private  String messageType;
