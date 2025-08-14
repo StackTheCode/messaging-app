@@ -22,6 +22,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/messages")
@@ -36,33 +39,40 @@ public class MessageController {
 
     @GetMapping("/history/{userId}/{user2Id}")
     public List<MessageDTO> getChatHistory(@PathVariable Long userId, @PathVariable Long user2Id) {
+
         List<Message> messages = messageRepository.findChatHistory(userId, user2Id);
 
-        return messages.stream()
-                .map(message -> MessageDTO.builder()
-                        .senderId(message.getSender().getId())
-                        .recipientId(message.getRecipient().getId())
-                        .content(message.getContent())
-                        .timestamp(message.getTimestamp())
-                        .messageType(message.getMessageType().name())
-                        .build()
+        List<MessageDTO> messageDTOs = messages.stream()
+                .map(message -> {
+                    MessageDTO dto = MessageDTO.builder()
+                            .senderId(message.getSender().getId())
+                            .recipientId(message.getRecipient().getId())
+                            .content(message.getContent())
+                            .timestamp(message.getTimestamp())
+                            .messageType(message.getMessageType().name())
+                            .fileName(message.getFileName()) // This is where fileName is included
+                            .build();
 
-                ).collect(Collectors.toList());
+                    return dto;
+                }).collect(Collectors.toList());
+
+
+        return messageDTOs;
     }
-
 
     @MessageMapping("/chat.send")
     public void sendMessage(@Payload MessageDTO chatMessage, Principal principal) {
 
+
         User sender = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("Sender not found in WebSocket session"));
 
-        User recipient = chatMessage.getRecipientId() == null ? null : new User(chatMessage.getRecipientId());
-
+        User recipient = null;
         if (chatMessage.getRecipientId() != null) {
             recipient = userRepository.findById(chatMessage.getRecipientId())
                     .orElseThrow(() -> new UsernameNotFoundException("Recipient not found in WebSocket session"));
         }
+
         Message message = Message.builder()
                 .sender(sender)
                 .recipient(recipient)
@@ -70,42 +80,40 @@ public class MessageController {
                 .timestamp(LocalDateTime.now())
                 .messageType(MessageType.valueOf(chatMessage.getMessageType()))
                 .isRead(false)
+                .fileName(chatMessage.getFileName())
                 .build();
+
+
 
         messageService.saveMessage(message);
 
 
         if (chatMessage.getRecipientId() != null) {
-//            //private chat routing
             messagingTemplate.convertAndSendToUser(
                     chatMessage.getRecipientId().toString(),
                     "/queue/messages",
                     chatMessage
             );
-
         } else {
-//            // Send to the public topic
             messagingTemplate.convertAndSend("/topic/chat", chatMessage);
         }
-
     }
 
     @MessageMapping("/chat.typing")
-    public void sendTypingStatus(@Payload TypingStatus typingStatus, Principal principal) {
-        User sender = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("Sender not found "));
-
-        if (!sender.getId().equals(typingStatus.getSenderId())) {
-            throw new UsernameNotFoundException("Sender id mismatch");
-        }
+    public void sendTypingStatus(@Payload TypingStatus typingStatus) {
         if (typingStatus.getRecipientId() != null) {
-            messagingTemplate.convertAndSendToUser(typingStatus.getRecipientId().toString(),"/queue/typing",typingStatus);
+            messagingTemplate.convertAndSendToUser(
+                    typingStatus.getRecipientId().toString(),
+                    "/queue/typing",
+                    typingStatus
+            );
         }
-
     }
-    @DeleteMapping(("/history/{userId}/{user2Id}"))
-    public  void clearChatHistory(@PathVariable Long userId,@PathVariable Long user2Id){
-        messageService.clearChatHistory(userId,user2Id);
+
+    @DeleteMapping("/history/{user1Id}/{user2Id}")
+    public void clearChatHistory(@PathVariable Long user1Id, @PathVariable Long user2Id) {
+
+        messageService.clearChatHistory(user1Id, user2Id);
     }
 
 }
