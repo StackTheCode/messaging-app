@@ -1,15 +1,26 @@
+# application.yml
+
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/jwt_security
+    url: jdbc:postgresql://localhost:5432/cortex
     username: postgres
     password: kamran1980
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-     ddl-auto: update
+      ddl-auto: update
     show-sql: true
     properties:
-     hibernate:
-       format_sql: true
+      hibernate:
+        format_sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+
+aws:
+  s3:
+    bucket:
+      name: my-images-cortex
+    access-key: AKIA5A6NYE6667TSD66D
+    secret-key: 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
+    region: eu-west-2

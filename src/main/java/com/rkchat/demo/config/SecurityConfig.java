@@ -77,7 +77,7 @@ public class SecurityConfig {
                         .requestMatchers("/","/index.html", "/api/auth/**", "/ws/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.DELETE,"/api/messages/history/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/files/upload").authenticated()
-                        .requestMatchers(HttpMethod.GET,"/api/files/download/**").permitAll()
+
                         .requestMatchers(HttpMethod.DELETE,"/api/files/history/**").authenticated()
                         .anyRequest()
                         .authenticated()
