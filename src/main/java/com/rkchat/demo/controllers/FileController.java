@@ -1,17 +1,15 @@
 package com.rkchat.demo.controllers;
 
 
-import com.rkchat.demo.services.S3Service;
+import  com.rkchat.demo.services.S3Service;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 
 
 import java.io.IOException;

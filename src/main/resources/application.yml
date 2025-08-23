@@ -2,9 +2,9 @@
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/cortex
-    username: postgres
-    password: kamran1980
+    url:  ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -16,11 +16,12 @@ spring:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
+frontend:
+  url: ${FRONTEND_URL}
+
 
 aws:
   s3:
     bucket:
-      name: my-images-cortex
-    access-key: AKIA5A6NYE6667TSD66D
-    secret-key: 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
-    region: eu-west-2
+      name: ${AWS_S3_BUCKET_NAME}
+    region: ${AWS_REGION}
