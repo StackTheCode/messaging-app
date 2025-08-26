@@ -38,6 +38,7 @@ public class SecurityConfig {
 
     @Value("${frontend.url}")
     private String frontendUrl;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -77,7 +78,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/","/index.html", "/api/auth/**", "/ws/**").permitAll()
+                        .requestMatchers("/","/index.html", "/api/auth/**", "/ws/**","/api/health").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.DELETE,"/api/messages/history/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/files/upload").authenticated()
 
