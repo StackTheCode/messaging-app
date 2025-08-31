@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class MessageService {
@@ -23,5 +24,14 @@ public class MessageService {
     @Transactional
     public void clearChatHistory(Long user1Id,Long user2Id){
         messageRepository.deleteMessagesBetweenUsers(user1Id,user2Id);
+    }
+    public boolean userCanAccessMessage(Long messageId,Long userId){
+        Optional<Message> messageOpt = messageRepository.findById(messageId);
+        if (messageOpt.isEmpty()) {
+            return false;
+        }
+Message message = messageOpt.get();
+        return message.getSender().getId().equals(userId) ||
+                (message.getRecipient() != null && message.getRecipient().getId().equals(userId));
     }
 }

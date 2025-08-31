@@ -3,7 +3,6 @@ package com.rkchat.demo.config;
 import com.rkchat.demo.JwtAuthFilter;
 import com.rkchat.demo.services.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -36,9 +35,6 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final CustomUserDetailsService userDetailsService;
 
-    @Value("${frontend.url}")
-    private String frontendUrl;
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -47,7 +43,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-    return  config.getAuthenticationManager();
+        return  config.getAuthenticationManager();
     }
 
     @Bean
@@ -61,7 +57,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(frontendUrl));
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
@@ -78,11 +74,12 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/","/index.html", "/api/auth/**", "/ws/**","/api/health").permitAll()
+                        .requestMatchers("/","/index.html", "/api/auth/**", "/ws/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.DELETE,"/api/messages/history/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/files/upload").authenticated()
-
+                        .requestMatchers(HttpMethod.GET,"/api/files/download/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE,"/api/files/history/**").authenticated()
+                        .requestMatchers("/api/tasks/**").authenticated()
                         .anyRequest()
                         .authenticated()
                 )
@@ -95,6 +92,5 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 
 }

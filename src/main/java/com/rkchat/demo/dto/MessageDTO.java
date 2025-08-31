@@ -11,7 +11,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
     public class MessageDTO {
-        private  Long senderId;
+    private Long id;
+    private  Long senderId;
     private  Long recipientId;
     private  String content;
     private String fileName;

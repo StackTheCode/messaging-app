@@ -1,6 +1,6 @@
 package com.rkchat.demo.services;
 
-import com.rkchat.demo.User;
+import com.rkchat.demo.models.User;
 import com.rkchat.demo.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +30,11 @@ public class CustomUserDetailsService implements UserDetailsService {
                                        .build();
 
 
+    }
+    public Long getUserIdByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"))
+                .getId();
     }
     
 }

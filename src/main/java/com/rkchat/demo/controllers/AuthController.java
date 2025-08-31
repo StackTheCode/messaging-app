@@ -1,6 +1,6 @@
 package com.rkchat.demo.controllers;
 
-import com.rkchat.demo.User;
+import com.rkchat.demo.models.User;
 import com.rkchat.demo.dto.AuthResponse;
 import com.rkchat.demo.dto.LoginRequest;
 import com.rkchat.demo.dto.RegisterRequest;
@@ -53,7 +53,6 @@ public class AuthController {
     }
 
 
-    // Optional: register endpoint
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {

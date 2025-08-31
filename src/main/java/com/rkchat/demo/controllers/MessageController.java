@@ -1,6 +1,6 @@
 package com.rkchat.demo.controllers;
 
-import com.rkchat.demo.User;
+import com.rkchat.demo.models.User;
 
 import com.rkchat.demo.dto.MessageDTO;
 import com.rkchat.demo.dto.TypingStatus;
@@ -45,6 +45,7 @@ public class MessageController {
         List<MessageDTO> messageDTOs = messages.stream()
                 .map(message -> {
                     MessageDTO dto = MessageDTO.builder()
+                            .id(message.getId())
                             .senderId(message.getSender().getId())
                             .recipientId(message.getRecipient().getId())
                             .content(message.getContent())
@@ -83,19 +84,29 @@ public class MessageController {
                 .fileName(chatMessage.getFileName())
                 .build();
 
+        // Save the message and get the saved entity with generated ID
+        Message savedMessage = messageService.saveMessage(message);
 
+        // Update the DTO with the generated ID before sending via WebSocket
+        MessageDTO responseDTO = MessageDTO.builder()
+                .id(savedMessage.getId())
+                .senderId(savedMessage.getSender().getId())
+                .recipientId(savedMessage.getRecipient() != null ? savedMessage.getRecipient().getId() : null)
+                .content(savedMessage.getContent())
+                .timestamp(savedMessage.getTimestamp())
+                .messageType(savedMessage.getMessageType().name())
+                .fileName(savedMessage.getFileName())
+                .build();
 
-        messageService.saveMessage(message);
-
-
+        // Send the updated DTO with the generated ID
         if (chatMessage.getRecipientId() != null) {
             messagingTemplate.convertAndSendToUser(
                     chatMessage.getRecipientId().toString(),
                     "/queue/messages",
-                    chatMessage
+                    responseDTO
             );
         } else {
-            messagingTemplate.convertAndSend("/topic/chat", chatMessage);
+            messagingTemplate.convertAndSend("/topic/chat", responseDTO);
         }
     }
 

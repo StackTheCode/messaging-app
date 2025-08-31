@@ -1,6 +1,5 @@
 package com.rkchat.demo.models;
 
-import com.rkchat.demo.User;
 import com.rkchat.demo.enums.MessageType;
 import jakarta.persistence.*;
 import lombok.*;
