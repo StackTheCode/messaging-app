@@ -105,6 +105,11 @@ public class MessageController {
                     "/queue/messages",
                     responseDTO
             );
+            messagingTemplate.convertAndSendToUser(
+                    sender.getId().toString(),
+                    "/queue/messages",
+                    responseDTO
+            );
         } else {
             messagingTemplate.convertAndSend("/topic/chat", responseDTO);
         }

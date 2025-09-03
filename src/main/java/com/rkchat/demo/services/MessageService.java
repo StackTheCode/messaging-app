@@ -22,8 +22,11 @@ public class MessageService {
         return  messageRepository.save(message);
     }
     @Transactional
-    public void clearChatHistory(Long user1Id,Long user2Id){
-        messageRepository.deleteMessagesBetweenUsers(user1Id,user2Id);
+    public void clearChatHistory(Long user1Id, Long user2Id){
+        if (user1Id == null || user2Id == null) {
+            throw new IllegalArgumentException("User IDs must not be null");
+        }
+        messageRepository.deleteMessagesBetweenUsers(user1Id, user2Id);
     }
     public boolean userCanAccessMessage(Long messageId,Long userId){
         Optional<Message> messageOpt = messageRepository.findById(messageId);

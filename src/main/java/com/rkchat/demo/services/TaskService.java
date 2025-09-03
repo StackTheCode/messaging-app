@@ -27,6 +27,10 @@ public class TaskService {
 
 
     public TaskDTO createTaskFromMessage(CreateTaskRequest request, Long userId){
+        System.out.println("=== TASK CREATION DEBUG ===");
+        System.out.println("Requested messageId: " + request.getMessageId());
+        System.out.println("Current userId: " + userId);
+
         if (!messageService.userCanAccessMessage(request.getMessageId(),userId)){
             throw new RuntimeException("User doesn't have access to this message");
         }
