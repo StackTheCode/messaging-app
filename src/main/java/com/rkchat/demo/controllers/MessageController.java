@@ -10,6 +10,8 @@ import com.rkchat.demo.repositories.MessageRepository;
 import com.rkchat.demo.repositories.UserRepository;
 import com.rkchat.demo.services.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -19,7 +21,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -131,5 +135,46 @@ public class MessageController {
 
         messageService.clearChatHistory(user1Id, user2Id);
     }
+    @DeleteMapping("/{messageId}")
+    public ResponseEntity<Map<String, Object>> deleteMessage(
+            @PathVariable Long messageId,
+            Principal principal) {
 
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // Get the current user
+            User currentUser = userRepository.findByUsername(principal.getName())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            // Attempt to delete the message
+            boolean deleted = messageService.deleteMessage(messageId, currentUser.getId());
+
+            if (deleted) {
+                response.put("success", true);
+                response.put("messageId", messageId);
+                response.put("message", "Message deleted successfully");
+
+                messagingTemplate.convertAndSend(
+                        "/topic/delete",
+                        Map.of("id", messageId)
+                );
+
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("error", "Message not found or you don't have permission to delete it");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+        } catch (UsernameNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "User not authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "Failed to delete message: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 }

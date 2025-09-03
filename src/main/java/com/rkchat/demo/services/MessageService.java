@@ -22,6 +22,26 @@ public class MessageService {
         return  messageRepository.save(message);
     }
     @Transactional
+    public boolean deleteMessage(Long messageId, Long userId){
+        if (messageId == null || userId == null) {
+            throw new IllegalArgumentException("Message ID and User ID must not be null");
+        }
+        if (!userCanAccessMessage(messageId, userId)) {
+            return false;
+        }
+        Optional<Message> messageOptional = messageRepository.findById(messageId);
+        if (messageOptional.isEmpty()) {
+            return  false;
+        }
+        Message message = messageOptional.get();
+         if (!message.getSender().getId().equals(userId)) {
+             return false;
+         }
+         messageRepository.deleteById(messageId);
+         return true;
+    }
+
+    @Transactional
     public void clearChatHistory(Long user1Id, Long user2Id){
         if (user1Id == null || user2Id == null) {
             throw new IllegalArgumentException("User IDs must not be null");
@@ -37,4 +57,5 @@ Message message = messageOpt.get();
         return message.getSender().getId().equals(userId) ||
                 (message.getRecipient() != null && message.getRecipient().getId().equals(userId));
     }
+
 }
