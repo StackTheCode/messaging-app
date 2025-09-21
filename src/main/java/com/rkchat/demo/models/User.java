@@ -2,6 +2,9 @@ package com.rkchat.demo.models;
 
 import jakarta.persistence.*;
 
+
+
+
 @Entity
 
 @Table(name="users")
@@ -12,10 +15,31 @@ public class User {
 
     @Column(unique=true)
     private String username;
+
+    @Column(nullable = true)
     private String password;
+
+
     private  String email;
 
     private  String role;
+
+//    Fields for Oauth 2
+
+    @Column(name = "google_id", unique = true)
+    private String googleId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "auth_provider")
+    private AuthProvider provider = AuthProvider.LOCAL;
+
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;
+
+
+    public enum AuthProvider {
+        LOCAL, GOOGLE
+    }
 
     public User() {
 
@@ -29,6 +53,14 @@ public class User {
          this.password = password;
          this.email = email;
          this.role = role;
+    }
+    public User(String username, String email, String role, String googleId, String profilePictureUrl) {
+        this.username = username;
+        this.email = email;
+        this.role = role;
+        this.googleId = googleId;
+        this.provider = AuthProvider.GOOGLE;
+        this.profilePictureUrl = profilePictureUrl;
     }
 
     public Long getId() {
@@ -69,5 +101,29 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getGoogleId() {
+        return googleId;
+    }
+
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
+    }
+
+    public AuthProvider getProvider() {
+        return provider;
+    }
+
+    public void setProvider(AuthProvider provider) {
+        this.provider = provider;
+    }
+
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
+    }
+
+    public void setProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
     }
 }
