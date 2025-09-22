@@ -1,6 +1,7 @@
 package com.rkchat.demo.config;
 
 import com.rkchat.demo.JwtAuthFilter;
+import com.rkchat.demo.controllers.OAuth2AuthenticationSuccessHandler;
 import com.rkchat.demo.services.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +37,7 @@ public class SecurityConfig {
 private String frontendUrl;
     private final JwtAuthFilter jwtAuthFilter;
     private final CustomUserDetailsService userDetailsService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -76,7 +78,7 @@ private String frontendUrl;
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/","/index.html", "/api/auth/**", "/ws/**").permitAll()
+                        .requestMatchers("/","/index.html", "/api/auth/**", "/ws/**", "/oauth2/**","/login/oauth2/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.DELETE,"/api/messages/history/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/files/upload").authenticated()
                         .requestMatchers(HttpMethod.GET,"/api/files/download/**").permitAll()
@@ -89,7 +91,11 @@ private String frontendUrl;
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
+                .oauth2Login(oauth2Login ->
+                        oauth2Login
+                                .successHandler(oAuth2AuthenticationSuccessHandler)
+                                .failureUrl(frontendUrl + "/login?error=oauth2_error")
+                )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

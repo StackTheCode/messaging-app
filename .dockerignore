@@ -1,0 +1,23 @@
+# Ignore build artifacts
+target/
+build/
+
+# Ignore local dependency caches
+.gradle/
+.m2/
+
+# Ignore IDE files
+.idea/
+.vscode/
+
+# Ignore local and sensitive configuration files
+.env*
+application-dev.yml
+*.properties
+
+# Ignore version control
+.git/
+.gitignore
+
+# Other OS files to ignore
+.DS_Store
