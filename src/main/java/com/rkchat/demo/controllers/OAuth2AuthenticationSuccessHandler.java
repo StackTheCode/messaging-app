@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.util.UUID;
+
 
 @Component
 @RequiredArgsConstructor
