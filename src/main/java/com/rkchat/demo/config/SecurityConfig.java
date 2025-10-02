@@ -89,9 +89,9 @@ private String frontendUrl;
                         .anyRequest()
                         .authenticated()
                 )
-//                .exceptionHandling(e -> e
-//                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-//                )
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                )
 
                 .authenticationProvider(authenticationProvider())
                 .sessionManagement(session -> session

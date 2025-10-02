@@ -34,7 +34,7 @@ public class OAuth2AuthenticationSuccessHandler  extends SimpleUrlAuthentication
         throws IOException{
         OAuth2User oAuth2User  = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
-        String name = oAuth2User.getName();
+        String name = oAuth2User.getAttribute("name");
         String googleId = oAuth2User.getAttribute("sub");
         String profilePictureUrl = oAuth2User.getAttribute("picture");
 
@@ -54,7 +54,11 @@ public class OAuth2AuthenticationSuccessHandler  extends SimpleUrlAuthentication
     private User findOrCreateUser(String email,String name,String googleId,String profilePictureUrl) {
         Optional<User> existingUserByGoogleId = userRepository.findByGoogleId(googleId);
         if(existingUserByGoogleId.isPresent()){
-            return  existingUserByGoogleId.get();
+            User user = existingUserByGoogleId.get();
+
+            user.setUsername(generateUniqueUsername(name,email));
+            user.setProfilePictureUrl(profilePictureUrl);
+            return  userRepository.save(user);
         }
         Optional<User> existingUserByEmail = userRepository.findByEmail(email);
         if(existingUserByEmail.isPresent()){

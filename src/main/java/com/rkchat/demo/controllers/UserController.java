@@ -1,11 +1,9 @@
 package com.rkchat.demo.controllers;
 
 import com.rkchat.demo.models.User;
+import com.rkchat.demo.repositories.MessageRepository;
 import com.rkchat.demo.repositories.UserRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -13,9 +11,11 @@ import java.util.List;
 @RequestMapping("/api/users")
 public class UserController {
     private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
 
-    public UserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository, MessageRepository messageRepository) {
         this.userRepository = userRepository;
+        this.messageRepository = messageRepository;
     }
     @GetMapping
     public List<User> getAllUsers() {
@@ -29,4 +29,17 @@ public class UserController {
         return userRepository.findAll();
     }
 
-}
+    @GetMapping("/conversations/{userId}")
+    public List<User> getConversationPartners(@PathVariable Long userId) {
+        List<Long> partnerIds = messageRepository.findConversationPartnerIds(userId);
+
+        return userRepository.findAllById(partnerIds);
+
+    }
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id " + id));
+    }
+
+    }

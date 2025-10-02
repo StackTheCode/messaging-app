@@ -1,6 +1,7 @@
 package com.rkchat.demo.repositories;
 
 import com.rkchat.demo.models.Message;
+import com.rkchat.demo.models.User;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -26,4 +27,15 @@ public interface MessageRepository extends JpaRepository<Message,Long> {
     @Transactional
     @Query("DELETE FROM Message m WHERE (m.sender.id =:user1Id AND m.recipient.id =:user2Id) OR (m.sender.id = :user2Id and m.recipient.id = :user1Id)")
     void deleteMessagesBetweenUsers(@Param("user1Id") Long user1Id,@Param("user2Id") Long user2Id);
+
+
+
+
+    @Query("SELECT DISTINCT CASE " +
+            "WHEN m.sender.id = :userId THEN m.recipient.id " +
+            "ELSE m.sender.id END " +
+            "FROM Message m " +
+            "WHERE m.sender.id = :userId OR m.recipient.id = :userId")
+    List<Long> findConversationPartnerIds(@Param("userId") Long userId);
+
 }
